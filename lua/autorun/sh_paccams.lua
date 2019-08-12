@@ -79,7 +79,7 @@ if CLIENT then
 			local tab = {[m:SteamID()]={
 				["pos"]=pace.ViewPos,["ang"]=pace.ViewAngles*1,
 				["active"]=pace.IsActive(),["fov"]=pace.ViewFOV,
-				["w"]=ScrW(),["h"]=ScrH(),["parts"]=m.pac_parts and table.Count(pac.GetParts(true)) or -1,
+				["w"]=ScrW(),["h"]=ScrH(),["parts"]=SearchPACParts and #SearchPACParts(m) or -1,
 				["slow"]=input.IsKeyDown(KEY_LCONTROL),["fast"]=input.IsKeyDown(KEY_LSHIFT)
 			}}
 			local t = tab[m:SteamID()]
