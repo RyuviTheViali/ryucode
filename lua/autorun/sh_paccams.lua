@@ -107,7 +107,7 @@ if CLIENT then
 					["fast"] = input.IsKeyDown(KEY_LSHIFT),
 					["w"] = ScrW(),
 					["h"] = ScrH(),
-					["parts"] = m.pac_parts and table.Count(pac.GetParts(true)) or -1,
+					["parts"] = SearchPACParts and #SearchPACParts(m) or -1,
 				}
 			}
 			local t,l = datatable[m:SteamID()],datalast[m:SteamID()] or {}
