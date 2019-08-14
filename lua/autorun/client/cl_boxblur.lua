@@ -1,7 +1,6 @@
 MAT_BLUR = Material("pp/blurscreen")
 
 function BlurBox(amount,x,y,width,height,b_alpha,color)
-	amount = math.Clamp(amount,0,1)
 	surface.SetMaterial(MAT_BLUR)
 	if amount > 0 then
 		for i=(1/amount),1,(1/amount) do
