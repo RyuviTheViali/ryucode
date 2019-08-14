@@ -58,7 +58,7 @@ local function CheckTOSAgreement()
 	return false
 end
 
-if check and CheckTOSAgreement() then return end
+if check or CheckTOSAgreement() then return end
 
 local jointos = vgui.Create("DFrame")
 jointos:SetSize(640,824)
