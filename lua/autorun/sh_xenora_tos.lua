@@ -5,7 +5,7 @@ if SERVER then
 		net.Start("xtos_msg")
 			net.WriteEntity(p)
 			net.WriteBool(net.ReadBool())
-		net.Send(xsys.AuthorizedOverseers)
+		net.Send(xsys.GetAuthorizedOverseers())
 	end)
 else
 	local function XTOS(check)
