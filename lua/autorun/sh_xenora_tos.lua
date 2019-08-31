@@ -14,7 +14,7 @@ else
 		surface.CreateFont("tosheader"   ,{font="Helvetica",size=36,weight=0,antialias=true})
 		surface.CreateFont("tossubheader",{font="Helvetica",size=24,weight=0,antialias=true})
 
-		local tos = {
+		local tostxt = {
 			"Welcome to Xenora, a sandbox-based building, PAC-editing, and developer-friendly server.",
 			"Here is what you shouldn't do while you're here:",
 			"",
@@ -78,7 +78,7 @@ else
 		if check ~= CheckTOSAgreement() then return end
 
 		local jointos = vgui.Create("DFrame")
-		jointos:SetSize(640,824)
+		jointos:SetSize(640,math.min(824,check and math.min(784,ScrH()) or ScrH()))
 		jointos:Center()
 		jointos:SetTitle("")
 		jointos:ShowCloseButton(check)
@@ -86,10 +86,6 @@ else
 			BlurBoxPanel(self,4,255,Color(0,0,0,200))
 			draw.SimpleTextOutlined("• Xenora •","tosheader",w/2,22,Color(0,0,0,255),1,1,1,Color(150,100,255,255))
 			draw.SimpleTextOutlined("Rules, Terms of Service, and Surveillance Notice","tossubheader",w/2,52,Color(255,255,255,255),1,1,1,Color(64,64,64,255))
-			
-			for k,v in pairs(tos) do
-				draw.SimpleTextOutlined(v,"Default",16,64+k*16,Color(255,255,255,255),0,0,1,Color(64,64,64,255))
-			end
 			
 			if not check then
 				draw.SimpleTextOutlined("Don't show again","Default",w/2,h-32,Color(255,255,255,255),1,1,1,Color(64,64,64,255))
@@ -99,6 +95,19 @@ else
 
 		if jointos and jointos:IsValid() then
 			RunConsoleCommand("vechud","visible","0")
+		end
+
+		local tos = vgui.Create("DScrollPanel",jointos)
+		tos:SetPos(8,64)
+		tos:SetSize(jointos:GetWide()-16,jointos:GetTall()-(check and 72 or 112))
+
+		local tostext = tos:Add("DPanel")
+		tostext:SetPos(0,0)
+		tostext:SetSize(tos:GetWide(),712)
+		function tostext:Paint(w,h)
+			for k,v in pairs(tostxt) do
+				draw.SimpleTextOutlined(v,"Default",8,k*16,Color(255,255,255,255),0,0,1,Color(64,64,64,255))
+			end
 		end
 
 		if not check then
