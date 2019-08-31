@@ -1429,6 +1429,16 @@ else
 		
 		if xx >= lucome2.SectorData.ovac.Pos.x and xx <= lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x and
 		   yy >= lucome2.SectorData.ovac.Pos.y and yy <= lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.Size.y then
+		 		local ang  = -ply:EyeAngles():Right():Angle()+Angle(0,-90,0)
+		   		local size = hov and 32 or 16
+		   		surface.SetTexture(surface.GetTextureID("vgui/white"))
+		   		surface.SetDrawColor(Color(plcol.r,plcol.g,plcol.b,hov and 128 or 64))
+				surface.DrawPoly({
+					{["x"]=xx,["y"]=yy},
+					{["x"]=xx+((ang+Angle(0,-45,0)):Forward()*size).x,["y"]=yy+((ang+Angle(0,-45,0)):Forward()*size).y},
+					{["x"]=xx+((ang+Angle(0, 45,0)):Forward()*size).x,["y"]=yy+((ang+Angle(0, 45,0)):Forward()*size).y}
+				})
+
 				lucome2.SectorData.ovac.MatrixDot(xx,yy,hov and 20 or 10,64,Color(0,0,0,255))
 				lucome2.SectorData.ovac.MatrixDot(xx,yy,hov and 12 or 6 ,64,plcol           )
 		end
