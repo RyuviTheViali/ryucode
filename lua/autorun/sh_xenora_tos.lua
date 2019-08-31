@@ -91,6 +91,9 @@ else
 				draw.SimpleTextOutlined("Don't show again","Default",w/2,h-32,Color(255,255,255,255),1,1,1,Color(64,64,64,255))
 			end
 		end
+		function jointos:OnClose()
+			RunConsoleCommand("vechud","visible","1")
+		end
 		jointos:MakePopup()
 
 		if jointos and jointos:IsValid() then
