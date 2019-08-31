@@ -1,5 +1,5 @@
 local vecmeta = debug.getregistry().Vector
-vecmeta.ToScreenOld = vecmeta.ToScreen
+vecmeta.ToScreenOld = vecmeta.ToScreenOld or vecmeta.ToScreen --only redefine once
 
 local function GetFOV()
 	if pace and pace:IsActive() then
