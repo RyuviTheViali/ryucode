@@ -1530,7 +1530,7 @@ else
 		if tplycount > 1 then
 			for k,v in pairs(lucome2.SectorData.ovac.TrackingPlayer) do
 				if v:GetPos():Distance(tplycen) > tplymaxdist then
-					tplymaxdist = (1/(v:GetPos():Distance(tplycen)))*lucome2.SectorData.ovac.MapScale*0.8
+					tplymaxdist = math.min(64,1/(v:GetPos():Distance(tplycen))*lucome2.SectorData.ovac.MapScale*0.8)
 				end
 			end
 		else
@@ -1651,7 +1651,7 @@ else
 					lucome2.SectorData.ovac.SelectedPlayer = v
 			end)
 			lucome2.RenderInvisibleCircleButton(MOUSE_RIGHT,
-				lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+48,lucome2.SectorData.ovac.Pos.y+k*16,12,true,function()
+				lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+64,lucome2.SectorData.ovac.Pos.y+k*16,12,true,function()
 					local new = Vector(
 						 math.Remap(
 							(lucome2.SectorData.ovac.PlayerPoses[v].x-lucome2.SectorData.ovac.Pos.x),
