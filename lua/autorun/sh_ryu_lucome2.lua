@@ -1327,6 +1327,7 @@ else
 	lucome2.SectorData.ovac.ShowPropOwners  = false
 	lucome2.SectorData.ovac.PlayerPoses     = {}
 	lucome2.SectorData.ovac.SelectedPlayer  = NULL
+	lucome2.SectorData.ovac.TrackingPlayer  = {}
 	lucome2.SectorData.ovac.MapImageFolder  = "lucome2-ovac-maps"
 	lucome2.SectorData.ovac.MapImage        = nil
 	lucome2.SectorData.ovac.MapMaterial     = NULL
@@ -1429,7 +1430,7 @@ else
 		
 		if xx >= lucome2.SectorData.ovac.Pos.x and xx <= lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x and
 		   yy >= lucome2.SectorData.ovac.Pos.y and yy <= lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.Size.y then
-		 		local ang  = -ply:EyeAngles():Right():Angle()+Angle(0,-90,0)
+		   		local ang  = -ply:EyeAngles():Right():Angle()+Angle(0,-90,0)
 		   		local size = hov and 32 or 16
 		   		surface.SetTexture(surface.GetTextureID("vgui/white"))
 		   		surface.SetDrawColor(Color(plcol.r,plcol.g,plcol.b,hov and 128 or 64))
@@ -1438,7 +1439,7 @@ else
 					{["x"]=xx+((ang+Angle(0,-45,0)):Forward()*size).x,["y"]=yy+((ang+Angle(0,-45,0)):Forward()*size).y},
 					{["x"]=xx+((ang+Angle(0, 45,0)):Forward()*size).x,["y"]=yy+((ang+Angle(0, 45,0)):Forward()*size).y}
 				})
-
+		   	
 				lucome2.SectorData.ovac.MatrixDot(xx,yy,hov and 20 or 10,64,Color(0,0,0,255))
 				lucome2.SectorData.ovac.MatrixDot(xx,yy,hov and 12 or 6 ,64,plcol           )
 		end
@@ -1515,6 +1516,30 @@ else
 				 lucome2.SectorData.ovac.MapScale*(1/lucome2.SectorData.ovac.MapZoom))
 				 
 			newzoomcenter = tempzoomcen+Vector(zx,zy)
+		end
+		
+		local tplycount = table.Count(lucome2.SectorData.ovac.TrackingPlayer)
+		
+		local tplycen = Vector()
+		local tplymaxdist = 0
+		for k,v in pairs(lucome2.SectorData.ovac.TrackingPlayer) do
+			tplycen = tplycen+v:GetPos()
+		end
+		tplycen = tplycen/tplycount
+		
+		if tplycount > 1 then
+			for k,v in pairs(lucome2.SectorData.ovac.TrackingPlayer) do
+				if v:GetPos():Distance(tplycen) > tplymaxdist then
+					tplymaxdist = (1/(v:GetPos():Distance(tplycen)))*lucome2.SectorData.ovac.MapScale*0.8
+				end
+			end
+		else
+			tplymaxdist = 16
+		end
+		
+		if tplycount > 0 then
+			newzoom       = tplycount > 1 and tplymaxdist or newzoom
+			newzoomcenter = tplycen
 		end
 		
 		lucome2.SectorData.ovac.RenderMap(lucome2.SectorData.ovac.Size.x,lucome2.SectorData.ovac.Size.y)
@@ -1598,15 +1623,31 @@ else
 		
 		for k,v in pairs(pt) do
 			local pcol = PacCamColors[v:EntIndex()] or Color(128,128,128,255)
+			
+			local istracking = lucome2.SectorData.ovac.TrackingPlayer[v]
+			
 			lucome2.SectorData.ovac.MatrixDot(lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+48,lucome2.SectorData.ovac.Pos.y+k*16,
+				12,32,istracking and Color(0,0,0,255) or Color(64,64,64,255))
+			lucome2.SectorData.ovac.MatrixDot(lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+48,lucome2.SectorData.ovac.Pos.y+k*16,
+				8 ,32,istracking and pcol             or Color(0 ,0 ,0 ,255))
+			
+			lucome2.SectorData.ovac.MatrixDot(lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+64,lucome2.SectorData.ovac.Pos.y+k*16,
 				12,32,Color(0,0,0,255))
-			lucome2.SectorData.ovac.MatrixDot(lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+48,lucome2.SectorData.ovac.Pos.y+k*16,
+			lucome2.SectorData.ovac.MatrixDot(lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+64,lucome2.SectorData.ovac.Pos.y+k*16,
 				8 ,32,pcol)
 				
-			draw.SimpleTextOutlined(v:Nick(),"Default",lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+48+16,
+			draw.SimpleTextOutlined(v:Nick(),"Default",lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+64+16,
 				lucome2.SectorData.ovac.Pos.y+k*16,pcol,0,1,1,Color(0,0,0,255))
 			lucome2.RenderInvisibleCircleButton(MOUSE_LEFT,
 				lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+48,lucome2.SectorData.ovac.Pos.y+k*16,12,true,function()
+					if lucome2.SectorData.ovac.TrackingPlayer[v] then
+						lucome2.SectorData.ovac.TrackingPlayer[v] = nil
+					else
+						lucome2.SectorData.ovac.TrackingPlayer[v] = v
+					end
+			end)
+			lucome2.RenderInvisibleCircleButton(MOUSE_LEFT,
+				lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+64,lucome2.SectorData.ovac.Pos.y+k*16,12,true,function()
 					lucome2.SectorData.ovac.SelectedPlayer = v
 			end)
 			lucome2.RenderInvisibleCircleButton(MOUSE_RIGHT,
@@ -1637,7 +1678,7 @@ else
 		
 		lucome2.RenderButton("Reset Zoom",
 			lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+32,
-			lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.Size.y-36,96,36,true,true,ocolcol,function()
+			lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.Size.y-36,96,36,table.Count(lucome2.SectorData.ovac.TrackingPlayer) == 0,true,ocolcol,function()
 				newzoom = 1
 				newzoomcenter = Vector(0,0)
 		end)
@@ -1645,7 +1686,6 @@ else
 		surface.SetDrawColor(ocolcol)
 		surface.DrawOutlinedRect(pnlposx,pnlposy,pw,ph)
 	end
-	
 	
 	lucome2.CreateSector = function(sec)
 		if not lucome2.SectorData[sec] then return end
