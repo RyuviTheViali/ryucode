@@ -1408,7 +1408,7 @@ else
 			draw.RoundedBox(resolution,x,y,resolution,resolution,color)
 		cam.PopModelMatrix()
 	end
-	oy
+	
 	lucome2.SectorData.ovac.RenderPropPosition = function(prop,ownply)
 		local pos = prop:GetPos()
 		local scale = lucome2.SectorData.ovac.MapScale*(1/lucome2.SectorData.ovac.MapZoom)
