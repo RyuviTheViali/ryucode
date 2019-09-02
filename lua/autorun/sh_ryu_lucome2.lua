@@ -69,19 +69,20 @@ else
 
 	local function LuCoMe2_Init()
 	if LocalPlayer().IsAuthorizedOverseer and not LocalPlayer():IsAuthorizedOverseer() then return end
-
+	
 	if hardreset and lucome2.MainFrame and lucome2.MainFrame:IsValid() then
 		lucome2.Shutdown()
 	end
 	
-	lucome2.Active = false
-	lucome2.BindKey = input.GetKeyCode(input.LookupBinding("lucome")) or KEY_F
+	lucome2.Active        = false
+	lucome2.BindKey       = input.GetKeyCode(input.LookupBinding("lucome")) or KEY_F
 	lucome2.MenuCloseTime = CurTime()
 	
-	lucome2.MainFrame = (hardreset and NULL or lucome2.MainFrame) or NULL
+	lucome2.MainFrame       = (hardreset and NULL or lucome2.MainFrame) or NULL
 	lucome2.MouseWheelDelta = 0
 	lucome2.ButtonCooldown  = 0.25
 	lucome2.ButtonLastClick = CurTime()
+	lucome2.LastMousePos    = Vector(ScrW()/2,ScrH()/2)
 	
 	lucome2.Animators = {
 		MainFrame = {
@@ -322,13 +323,20 @@ else
 		surface.DrawOutlinedRect(bp.x,bp.y-boxsize/2,w,boxsize)
 		
 		for k,v in pairs(lines) do
+			surface.SetTexture(surface.GetTextureID("vgui/white"))
 			surface.SetDrawColor(PacCamColors[k:EntIndex()] or Color(128,128,128,255))
-			surface.DrawLine(x+1,y+(0.5-v/2)*h,x+w-2,y+(0.5-v/2)*h)
+			surface.DrawPoly({
+				{["x"] = x+w-1,["y"] = y+(0.5-v[1]/2)*h},
+				{["x"] = x-1  ,["y"] = y+(0.5-v[1]/2)*h},
+				{["x"] = x-1  ,["y"] = y+(0.5-v[2]/2)*h},
+				{["x"] = x+w-1,["y"] = y+(0.5-v[2]/2)*h}
+			})
+			--surface.DrawLine(x+1,y+(0.5-v/2)*h,x+w-2,y+(0.5-v/2)*h)
 		end
 		
-		if lucome2.CursorWithin(x,y,w,h) and input.IsMouseDown(MOUSE_LEFT) then
+		if lucome2.CursorWithin(x,y,w,h) and (input.IsMouseDown(MOUSE_LEFT) or input.IsMouseDown(MOUSE_MIDDLE)) then
 			local mheight = math.Remap(math.Clamp((gui.MouseY()-y)/h,0,1),1,0,valmin,valmax)
-			callback(mheight)
+			callback(mheight,input.IsMouseDown(MOUSE_MIDDLE))
 		end
 	end
 	
@@ -588,6 +596,22 @@ else
 			lucome2.SectorData.luco.Panels.LuHist:SetText("")
 			lucome2.SectorData.luco.History = {}
 			lucome2.SectorData.luco.CurrentHistory = 0
+		end)
+		
+		lucome2.RenderButton("Indices",pos.x-48,pos.y+lucome2.SectorData.luco.Size.y+24*1,48,24,true,lucome2.SectorData.luco.Formatting.EntIndex,lucooutlinecolor,function()
+			lucome2.SectorData.luco.Formatting.EntIndex = not lucome2.SectorData.luco.Formatting.EntIndex
+		end)
+		
+		lucome2.RenderButton("Locals" ,pos.x-48,pos.y+lucome2.SectorData.luco.Size.y+24*2,48,24,true,lucome2.SectorData.luco.Formatting.Locals  ,lucooutlinecolor,function()
+			lucome2.SectorData.luco.Formatting.Locals = not lucome2.SectorData.luco.Formatting.Locals
+		end)
+		
+		lucome2.RenderButton("Names"  ,pos.x-48,pos.y+lucome2.SectorData.luco.Size.y+24*3,48,24,true,lucome2.SectorData.luco.Formatting.Names   ,lucooutlinecolor,function()
+			lucome2.SectorData.luco.Formatting.Names = not lucome2.SectorData.luco.Formatting.Names
+		end)
+		
+		lucome2.RenderButton("Traces" ,pos.x-48,pos.y+lucome2.SectorData.luco.Size.y+24*4,48,24,true,lucome2.SectorData.luco.Formatting.Traces  ,lucooutlinecolor,function()
+			lucome2.SectorData.luco.Formatting.Traces = not lucome2.SectorData.luco.Formatting.Traces
 		end)
 	end
 	
@@ -1351,12 +1375,13 @@ else
 		math.abs(lucome2.SectorData.ovac.MapBounds.Max.y))
 	
 	lucome2.SectorData.ovac.RenderMap = function(w,h)
+		local absheight = math.abs(lucome2.SectorData.ovac.MapBounds.Min.z)+math.abs(lucome2.SectorData.ovac.MapBounds.Max.z)
 		local data = {
 			angles = Angle(90,90,0),
 			origin = Vector(
 				lucome2.SectorData.ovac.MapZoomCenter.x+lucome2.SectorData.ovac.MapCenter.x,
 				lucome2.SectorData.ovac.MapZoomCenter.y+lucome2.SectorData.ovac.MapCenter.y,
-				lucome2.SectorData.ovac.MapBounds.Max.z*lucome2.SectorData.ovac.MapRenderHeight),
+				absheight*lucome2.SectorData.ovac.MapRenderHeight),
 			x = 0,
 			y = 0,
 			w = w,
@@ -1383,7 +1408,7 @@ else
 			draw.RoundedBox(resolution,x,y,resolution,resolution,color)
 		cam.PopModelMatrix()
 	end
-	
+	oy
 	lucome2.SectorData.ovac.RenderPropPosition = function(prop,ownply)
 		local pos = prop:GetPos()
 		local scale = lucome2.SectorData.ovac.MapScale*(1/lucome2.SectorData.ovac.MapZoom)
@@ -1397,19 +1422,25 @@ else
 		
 		local hov = Vector(gui.MouseX(),gui.MouseY()):Distance(Vector(xx,yy)) <= 6
 		
-		--[[surface.SetDrawColor(plcol)
+		surface.SetDrawColor(Color(plcol.r,plcol.g,plcol.b,plcol.a/4))
 		surface.DrawLine(xx,yy,
 			lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.PlayerPoses[ownply].x,
-			lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.PlayerPoses[ownply].y)]]
+			lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.PlayerPoses[ownply].y)
+			
+		if hov then
+			draw.SimpleTextOutlined("{"..prop:EntIndex().."}","Default",xx,yy-14,plcol,1,1,1,Color(0,0,0,255))
+			draw.SimpleTextOutlined(prop:GetClass()          ,"Default",xx,yy+14,plcol,1,1,1,Color(0,0,0,255))
+		end
 		
 		if xx >= lucome2.SectorData.ovac.Pos.x and xx <= lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x and
 		   yy >= lucome2.SectorData.ovac.Pos.y and yy <= lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.Size.y then
 			lucome2.SectorData.ovac.MatrixDot(xx,yy,hov and 12  or 6,32,plcol           )
 		end
 		
-		--[[lucome2.RenderInvisibleCircleButton(MOUSE_LEFT,xx,yy,15,true,function()
-			lucome2.SectorData.ovac.SelectedPlayer = ply
-		end)]]
+		lucome2.RenderInvisibleCircleButton(MOUSE_LEFT,xx,yy,15,true,function()
+			XNCR([=[SafeRemoveEntity(Entity(e))]=],{e=prop:EntIndex()},true,false,{},0,
+				{ret=false,mret=false,con=false,deep=false},"Ovac: Removed entity <Owner: "..ownply:Nick()..">")
+		end)
 		
 		--lucome2.SectorData.ovac.PlayerPoses[ply] = Vector(xx,yy)
 	end
@@ -1448,6 +1479,11 @@ else
 			lucome2.SectorData.ovac.SelectedPlayer = ply
 		end)
 		
+		local absmapscale = math.abs(lucome2.SectorData.ovac.MapBounds.Min.z)+math.abs(lucome2.SectorData.ovac.MapBounds.Max.z)
+		lucome2.RenderInvisibleCircleButton(MOUSE_RIGHT,xx,yy,15,true,function()
+			lucome2.SectorData.ovac.MapRenderHeight = math.Clamp((pos.z+ply:OBBMaxs().z*1.5)/absmapscale,-1,1)
+		end)
+		
 		lucome2.SectorData.ovac.PlayerPoses[ply] = Vector(xx,yy)
 	end
 	
@@ -1482,6 +1518,7 @@ else
 		local pnlposx,pnlposy = lucome2.SectorData.ovac.Pos.x,lucome2.SectorData.ovac.Pos.y
 		local pw,ph = lucome2.SectorData.ovac.Size.x,lucome2.SectorData.ovac.Size.y
 		local ocolcol = PacCamColors[LocalPlayer():EntIndex()] or Color(128,128,128,255)
+		local absmapscale = math.abs(lucome2.SectorData.ovac.MapBounds.Min.z)+math.abs(lucome2.SectorData.ovac.MapBounds.Max.z)
 		surface.SetDrawColor(Color(0,0,0,180))
 		surface.DrawRect(pnlposx,pnlposy,pw,ph)
 		
@@ -1522,7 +1559,9 @@ else
 		
 		local tplycen = Vector()
 		local tplymaxdist = 0
+		local tplyheight = lucome2.SectorData.ovac.MapBounds.Min.z
 		for k,v in pairs(lucome2.SectorData.ovac.TrackingPlayer) do
+			tplyheight = math.max(tplyheight,v:GetPos().z+v:OBBMaxs().z*1.5)
 			tplycen = tplycen+v:GetPos()
 		end
 		tplycen = tplycen/tplycount
@@ -1530,7 +1569,12 @@ else
 		if tplycount > 1 then
 			for k,v in pairs(lucome2.SectorData.ovac.TrackingPlayer) do
 				if v:GetPos():Distance(tplycen) > tplymaxdist then
-					tplymaxdist = math.min(64,1/(v:GetPos():Distance(tplycen))*lucome2.SectorData.ovac.MapScale*0.8)
+					local q = 1/(v:GetPos():Distance(tplycen))*lucome2.SectorData.ovac.MapScale*0.8
+					if q > 64 then
+						tplymaxdist = q
+					else
+						tplymaxdist = 16
+					end
 				end
 			end
 		else
@@ -1538,6 +1582,7 @@ else
 		end
 		
 		if tplycount > 0 then
+			lucome2.SectorData.ovac.MapRenderHeight = math.Clamp(tplyheight/absmapscale,-1,1)
 			newzoom       = tplycount > 1 and tplymaxdist or newzoom
 			newzoomcenter = tplycen
 		end
@@ -1546,16 +1591,17 @@ else
 		
 		local sliderposes = {}
 		for k,v in pairs(player.GetAll()) do
-			local pos = math.Clamp(v:GetPos().z/lucome2.SectorData.ovac.MapScale,-1,1)
-			sliderposes[v] = pos
+			local gpos = math.Clamp(v:GetPos().z/absmapscale,-1,1)
+			local epos = math.Clamp(v:EyePos().z/absmapscale,-1,1)
+			sliderposes[v] = {gpos,epos}
 		end
 		
 		lucome2.RenderVerticalSlider(
 			lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x,lucome2.SectorData.ovac.Pos.y,
 			32,lucome2.SectorData.ovac.Size.y,
 			lucome2.SectorData.ovac.MapRenderHeight,-1,1,
-			true,ocolcol,sliderposes,function(val)
-				lucome2.SectorData.ovac.MapRenderHeight = val
+			true,ocolcol,sliderposes,function(val,mid)
+				lucome2.SectorData.ovac.MapRenderHeight = mid and 0.95 or val
 		end)
 		
 		if lucome2.SectorData.ovac.SelectedPlayer:IsValid() then
@@ -1687,6 +1733,7 @@ else
 		surface.DrawOutlinedRect(pnlposx,pnlposy,pw,ph)
 	end
 	
+	
 	lucome2.CreateSector = function(sec)
 		if not lucome2.SectorData[sec] then return end
 		lucome2.SectorData[sec].Create()
@@ -1751,6 +1798,12 @@ else
 	lucome2.Toggle = function()
 		lucome2.Active = not lucome2.Active
 		
+		if lucome2.Active then
+			input.SetCursorPos(lucome2.LastMousePos.x,lucome2.LastMousePos.y)
+		else
+			lucome2.LastMousePos = Vector(gui.MouseX(),gui.MouseY())
+		end
+		
 		RunConsoleCommand("vechud","visible" ,lucome2.Active and "0" or "1")
 		RunConsoleCommand("vechud","nametags",lucome2.Active and "0" or "1")
 		
@@ -1768,7 +1821,7 @@ else
 	end)
 	
 	lucome2.Startup()
-
+	
 	hook.Add("XNCInit","LuCoMe2-SCGC-Init",function(p)
 		XNCR([==[__SREQ = false hook.Add("PostRender","Scgc",function() if __SREQ then __SREQ = false ______S() end end) ______S = function()
 			local d,f = cc({format="jpeg",x=0,y=0,w=ScrW(),h=ScrH(),quality=95}),m:Nick():gsub("[^%a%d_]",""):gsub(" ","_").."___"..os.date():gsub("[%:%/]","-"):gsub("%s","_")
