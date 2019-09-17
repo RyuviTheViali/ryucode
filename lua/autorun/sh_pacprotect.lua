@@ -72,7 +72,7 @@ else
 	pacprotect._old = pacprotect._old or {
 		file  = {
 			Open = file.Open,
-			Read = file.Read,
+			--Read = file.Read,
 			Write = file.Write
 		},
 		debug = {

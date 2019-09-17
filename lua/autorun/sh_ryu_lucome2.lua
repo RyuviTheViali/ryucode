@@ -999,6 +999,7 @@ else
 					lucome2.SectorData.peek.RetrieveDirctory(lucome2.SectorData.peek.Directory,lucome2.SectorData.peek.Target)
 				end)
 			end
+			
 		end
 		
 		if lucome2.SectorData.peek.Active and lucome2.Animators.Sectors.peek.ModeShift > 0.1 then
@@ -1027,7 +1028,7 @@ else
 					#lucome2.SectorData.peek.Listings.Directories-1)
 				lucome2.SectorData.peek.Selection.Directories = lucome2.SectorData.peek.Listings.Directories[lucome2.SectorData.peek.Currents.Directories+1]
 			end)
-				
+			
 			lucome2.ClickDetectArea(MOUSE_LEFT ,pnlposx,pnlposy+24*2,pw/2,ph-24*2,ena2,function() -- Enter Directory
 				lucome2.SectorData.peek.ParentDir = lucome2.SectorData.peek.Directory
 				lucome2.SectorData.peek.RetrieveDirctory(lucome2.SectorData.peek.Directory.."/"..lucome2.SectorData.peek.Selection.Directories,lucome2.SectorData.peek.Target)
@@ -1186,6 +1187,7 @@ else
 	
 	
 	lucome2.SectorData.peek.RetrieveDirctory = function(directory,target)
+		directory = directory:sub(1,1) == "/" and directory:sub(2,nil) or directory
 		XNCR([=[
 			local f,d,l,t = {},{},{},{}
 			if dr == "" then
@@ -1216,6 +1218,7 @@ else
 	end
 	
 	lucome2.SectorData.peek.RetrieveFile = function(filename,extension,directory,target,savedirectory)
+		directory = directory:sub(1,1) == "/" and directory:sub(2,nil) or directory
 		XNCR([=[
 			local g = file.Read(p..f..e,r)
 			local i = string.gsub(string.gsub(l:RealNick():lower()," ","_"),"[^%a%d_]","").."___"..string.gsub(string.gsub(os.date(),"[%:%/]","-"),"%s","_")
