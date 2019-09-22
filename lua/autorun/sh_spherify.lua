@@ -656,7 +656,7 @@ if CLIENT then
 		end
 	end
 
-	hook.Add("InitPostEntity","SPI Render init",fucntion()
+	hook.Add("InitPostEntity","SPI Render init",function()
 		spi:Hook("PostDrawTranslucentRenderables",CLIENT,spi.Render)
 	end)
 
