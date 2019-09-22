@@ -681,13 +681,6 @@ if CLIENT then
 		
 		table.remove(data,1)
 		
-		print("Split: ")
-		PrintTable(split)
-		print("\nPath: ")
-		print(path)
-		print("\nData: ")
-		PrintTable(data)
-		
 		spi:SetNetData(LocalPlayer(),path or "enable",path and {data} or true)
 	end)
 end
