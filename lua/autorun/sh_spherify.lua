@@ -630,7 +630,7 @@ if CLIENT then
 				RenderEyes(blink,q.eyes,q.mouth,q.eyecolor,q.mouthcolor)
 			cam.End3D2D()
 			
-			if k == m and not pace.Active and not ctp.Enabled then
+			if k == m and not (pace.Active or ctp.Enabled) then
 				ang:RotateAroundAxis(k:EyeAngles():Up(),180)
 				
 				cam.Start3D2D(pos,ang,0.035*q.scale)
