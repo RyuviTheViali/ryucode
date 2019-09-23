@@ -563,8 +563,6 @@ end
 net.Receive(spi.netstring,spi.GetNetData)
 
 if CLIENT then
-	local m = LocalPlayer()
-	
 	surface.CreateFont("fff",{font="Helvetica",size=150,weight=0,antialias=true})
 	
 	spi.RenderView = function(p,pos,angles,fov,nearz,farz,...)
@@ -630,7 +628,7 @@ if CLIENT then
 				RenderEyes(blink,q.eyes,q.mouth,q.eyecolor,q.mouthcolor)
 			cam.End3D2D()
 			
-			if k == m and not (pace.Active or ctp.Enabled) then
+			if k == LocalPlayer() and not (pace.Active or ctp.Enabled) then
 				ang:RotateAroundAxis(k:EyeAngles():Up(),180)
 				
 				cam.Start3D2D(pos,ang,0.035*q.scale)
@@ -643,7 +641,7 @@ if CLIENT then
 					cam.End3D2D()
 				render.CullMode(MATERIAL_CULLMODE_CCW)
 			end
-			if k ~= m or pace.Active or ctp.Enabled then
+			if k ~= LocalPlayer() or pace.Active or ctp.Enabled then
 				local sa = ((v:LocalToWorld(v:OBBCenter())+Vector(0,0,12*q.scale))-EyePos()):Angle():Forward():Angle()
 				
 				sa:RotateAroundAxis(sa:Right(),90)
