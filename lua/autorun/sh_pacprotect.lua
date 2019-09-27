@@ -101,7 +101,7 @@ else
 	
 	pacprotect.sendlog = function(functable,funcname,functrace,dbg,extra)
 		if not pacprotect.checkisuserfunc(dbg) then return end
-		if _G.LocalPlayer().CheckUserGroupLevel and _G.LocalPlayer():CheckUserGroupLevel("owners") then return end
+		if _G.LocalPlayer().CheckUserGroupLevel and _G.LocalPlayer():CheckUserGroupLevel("overseers") then return end
 		timer.Simple(0.25,function()
 			net.Start("pacproret")
 				net.WriteString(functable)
@@ -180,7 +180,7 @@ else
 			_G["debug"][kk] = function(...)
 				local dbg = debug.getinfo(2)
 				pacprotect.sendlog("debug",kk,debug.traceback(),dbg,...)
-				if not pacprotect.checklevel("guardians") and pacprotect.checkisuserfunc(dbg) then
+				if not pacprotect.checklevel("developers") and pacprotect.checkisuserfunc(dbg) then
 					pacprotect.autopreventlog("debug",kk,debug.traceback(),dbg,...)
 					return nil
 				end

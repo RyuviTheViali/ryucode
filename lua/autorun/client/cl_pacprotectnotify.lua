@@ -26,18 +26,20 @@ pacprotectnotify.PrintFunctionRan = function(ply,tab,nam,tra,dbg,ext)
 	for k,v in pairs(ext) do
 		Msg("\t\t"..k..": "..tostring(v).."\n")
 	end
-	
-	chat.AddText(red    ,"[PAC Protect]",
-				 grey   ," Client ",
-	             green  ,ply:Nick(),
-	             grey   ," executed function ",
-	             blue   ,tab.."."..nam)
-	chat.AddText(grey   ,"Details of execution:",
-	             palered," Calling Function name: ",
-	             red    ,dbg.name,
-	             palered,", Calling Function source: ",
-	             red    ,dbg.source)
-	chat.AddText(grey   ,"Check console for further detail.")
+
+	if not ply:CheckUserGroupLevel("developers") then
+		chat.AddText(red    ,"[PAC Protect]",
+					 grey   ," Client ",
+		             green  ,ply:Nick(),
+		             grey   ," executed function ",
+		             blue   ,tab.."."..nam)
+		chat.AddText(grey   ,"Details of execution:",
+		             palered," Calling Function name: ",
+		             red    ,dbg.name,
+		             palered,", Calling Function source: ",
+		             red    ,dbg.source)
+		chat.AddText(grey   ,"Check console for further detail.")
+	end
 end
 
 pacprotectnotify.PrintAutoBlocked = function(ply,tab,nam,tra,dbg,ext)
