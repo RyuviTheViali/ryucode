@@ -156,7 +156,7 @@ else
 	local white   = Color(225,255,255,255)
 	local unknown = Color(150,100,255,255)
 	lucome2.Hooks[lucome2.X.INI] = function(entity)
-		local entityname = isentity(entity) and entity:Nick() or tostring(entity)
+		local entityname = isentity(entity) and (entity.Nick and entity:Nick() or gameevent.EngineNick(entity)) or tostring(entity)
 		local entpaccamcolor = PacCamColors[isentity(entity) and entity:EntIndex() or -1] or unknown
 		
 		local inimsg = "XNET Initialized for client "..entityname
