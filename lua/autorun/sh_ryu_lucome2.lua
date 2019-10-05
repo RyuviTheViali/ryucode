@@ -1661,7 +1661,7 @@ else
 		if lucome2.SectorData.ovac.ShowPropOwners then
 			for k,v in pairs(ents.GetAll()) do
 				if v:EntIndex() <= 0 then continue end
-				if v.GetParent and v:GetParent():GetClass() == "Player" then continue end
+				if v.GetParent and v:GetParent():IsValid() and v:GetParent():GetClass() == "Player" then continue end
 
 				local owner = v:EntIndex() > 1 and v.CPPIGetOwner and v:CPPIGetOwner() or NULL
 				if not owner:IsValid() then continue end
