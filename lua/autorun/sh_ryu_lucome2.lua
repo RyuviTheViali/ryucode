@@ -1352,6 +1352,7 @@ else
 	lucome2.SectorData.ovac.Updated         = false
 	lucome2.SectorData.ovac.RegenerateMap   = false
 	lucome2.SectorData.ovac.ShowPropOwners  = false
+	lucome2.SectorData.ovac.ShowWorldEnts   = false
 	lucome2.SectorData.ovac.PlayerPoses     = {}
 	lucome2.SectorData.ovac.SelectedPlayer  = NULL
 	lucome2.SectorData.ovac.TrackingPlayer  = {}
@@ -1418,7 +1419,7 @@ else
 		local cen = lucome2.SectorData.ovac.MapCenter+lucome2.SectorData.ovac.MapZoomCenter
 		local maprelativepos = Vector(cen.x-pos.x,cen.y-pos.y)
 		local posscaled = Vector(maprelativepos.x/(scale/lucome2.SectorData.ovac.Size.x)/2,maprelativepos.y/(scale/lucome2.SectorData.ovac.Size.y)/2)
-		local plcol = PacCamColors[ownply:EntIndex()] or Color(128,128,128,255)
+		local plcol = ownply and (PacCamColors[ownply:EntIndex()] or Color(128,128,128,255)) or Color(150,100,255,255)
 		
 		local xx = lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.MapLocalCenter.x-posscaled.x
 		local yy = lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.MapLocalCenter.y+posscaled.y
@@ -1426,9 +1427,11 @@ else
 		local hov = Vector(gui.MouseX(),gui.MouseY()):Distance(Vector(xx,yy)) <= 6
 		
 		surface.SetDrawColor(Color(plcol.r,plcol.g,plcol.b,plcol.a/4))
-		surface.DrawLine(xx,yy,
-			lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.PlayerPoses[ownply].x,
-			lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.PlayerPoses[ownply].y)
+		if ownply then
+			surface.DrawLine(xx,yy,
+				lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.PlayerPoses[ownply].x,
+				lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.PlayerPoses[ownply].y)
+		end
 			
 		if hov then
 			draw.SimpleTextOutlined("{"..prop:EntIndex().."}","Default",xx,yy-14,plcol,1,1,1,Color(0,0,0,255))
@@ -1442,7 +1445,7 @@ else
 		
 		lucome2.RenderInvisibleCircleButton(MOUSE_LEFT,xx,yy,15,true,function()
 			XNCR([=[SafeRemoveEntity(Entity(e))]=],{e=prop:EntIndex()},true,false,{},0,
-				{ret=false,mret=false,con=false,deep=false},"Ovac: Removed entity <Owner: "..ownply:Nick()..">")
+				{ret=false,mret=false,con=false,deep=false},"Ovac: Removed entity <Owner: "..(ownply and ownply:Nick() or "SV")..">")
 		end)
 		
 		--lucome2.SectorData.ovac.PlayerPoses[ply] = Vector(xx,yy)
@@ -1657,10 +1660,24 @@ else
 		
 		if lucome2.SectorData.ovac.ShowPropOwners then
 			for k,v in pairs(ents.GetAll()) do
+				if v:EntIndex() <= 0 then continue end
+				if v.GetParent and v:GetParent():GetClass() == "Player" then continue end
+
 				local owner = v:EntIndex() > 1 and v.CPPIGetOwner and v:CPPIGetOwner() or NULL
 				if not owner:IsValid() then continue end
 				if v:GetPos():Distance(owner:GetPos()) >= lucome2.SectorData.ovac.MapScale*3 then continue end
 				lucome2.SectorData.ovac.RenderPropPosition(v,owner)
+			end
+		end
+
+		if lucome2.SectorData.ovac.ShowWorldEnts then
+			for k,v in pairs(ents.GetAll()) do
+				if v:EntIndex() <= 0 then continue end
+				if v.GetParent and v:GetParent():IsValid() and v:GetParent():GetClass() == "Player" then continue end
+
+				local owner = v:EntIndex() > 1 and v.CPPIGetOwner and v:CPPIGetOwner() or NULL
+				if owner:IsValid() then continue end
+				lucome2.SectorData.ovac.RenderPropPosition(v,nil)
 			end
 		end
 		
@@ -1718,6 +1735,12 @@ else
 					newzoom = 16
 			end)
 		end
+
+		lucome2.RenderButton("Show World Entities",
+			lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+32,
+			lucome2.SectorData.ovac.Pos.y+lucome2.SectorData.ovac.Size.y-36*3,96,36,true,lucome2.SectorData.ovac.ShowWorldEnts,Color(150,100,255,255),function()
+				lucome2.SectorData.ovac.ShowWorldEnts = not lucome2.SectorData.ovac.ShowWorldEnts
+		end)
 		
 		lucome2.RenderButton("Show Prop Owners",
 			lucome2.SectorData.ovac.Pos.x+lucome2.SectorData.ovac.Size.x+32,
